@@ -9,11 +9,10 @@ class RiskAssessment(models.Model):
         ("username", "Username"),
     ]
 
-    RISK_LEVELS = [
+    RISK_LEVEL_CHOICES = [
         ("low", "Low"),
         ("medium", "Medium"),
         ("high", "High"),
-        ("critical", "Critical"),
     ]
 
     user = models.ForeignKey(
@@ -55,7 +54,7 @@ class RiskAssessment(models.Model):
 
     risk_level = models.CharField(
         max_length=20,
-        choices=RISK_LEVELS,
+        choices=RISK_LEVEL_CHOICES,
         default="low",
     )
 
@@ -68,9 +67,10 @@ class RiskAssessment(models.Model):
     )
 
     def __str__(self):
+        username = self.user.username if self.user else "No user"
+
         return (
-            f"{self.user.username}: "
+            f"{username}: "
             f"{self.identifier_type} assessment "
             f"({self.risk_score}/10)"
         )
-# Create your models here.

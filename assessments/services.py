@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+
+
 DEMO_RESULTS = {
     "lowrisk@example.com": {
         "breach_count": 0,
@@ -17,17 +19,6 @@ DEMO_RESULTS = {
     },
 }
 
-def lookup_identifier(identifier: str) -> dict:
-    normalised_identifier = identifier.strip().lower()
-
-    return DEMO_RESULTS.get(
-        normalised_identifier,
-        {
-            "breach_count": 0,
-            "exposed_data_count": 0,
-            "sensitive_data_exposed": False,
-        },
-    )
 
 @dataclass
 class AssessmentResult:
@@ -39,46 +30,61 @@ class AssessmentResult:
     recommendations: str
 
 
+def lookup_identifier(identifier: str) -> dict:
+    """
+    Temporary local lookup used while developing the application.
+
+    This can later be replaced with an external breach-data API.
+    """
+
+    normalised_identifier = identifier.strip().lower()
+
+    return DEMO_RESULTS.get(
+        normalised_identifier,
+        {
+            "breach_count": 0,
+            "exposed_data_count": 0,
+            "sensitive_data_exposed": False,
+        },
+    )
+
+
 def calculate_risk_score(
     breach_count: int,
     exposed_data_count: int,
     sensitive_data_exposed: bool,
-) -> tuple[int, str]:
-    """
-    Calculate a transparent risk score between 1 and 10.
-
-    This is an initial project scoring model and should be validated
-    during testing and evaluation.
-    """
-
+) -> int:
     score = 1
 
-    # Breach frequency: maximum contribution of four points.
-    score += min(breach_count, 4)
+    if breach_count >= 1:
+        score += 2
 
-    # Number of different exposed data categories.
-    if exposed_data_count >= 2:
-        score += 1
+    if breach_count >= 3:
+        score += 2
+
+    if breach_count >= 5:
+        score += 2
 
     if exposed_data_count >= 5:
         score += 1
 
-    # Passwords, financial information, or similar sensitive data.
+    if exposed_data_count >= 10:
+        score += 1
+
     if sensitive_data_exposed:
-        score += 3
+        score += 1
 
-    score = min(score, 10)
+    return min(score, 10)
 
+
+def determine_risk_level(score: int) -> str:
     if score <= 3:
-        risk_level = "low"
-    elif score <= 6:
-        risk_level = "medium"
-    elif score <= 8:
-        risk_level = "high"
-    else:
-        risk_level = "critical"
+        return "low"
 
-    return score, risk_level
+    if score <= 6:
+        return "medium"
+
+    return "high"
 
 
 def create_recommendations(
@@ -97,7 +103,7 @@ def create_recommendations(
         )
 
         recommendations.append(
-            "Review the affected accounts for unfamiliar logins, "
+            "Review affected accounts for unfamiliar logins, "
             "messages, purchases, or profile changes."
         )
 
@@ -112,47 +118,15 @@ def create_recommendations(
             "messages, and requests for personal information."
         )
 
+    if breach_count == 0:
+        recommendations.append(
+            "No known breaches were identified, but continue following "
+            "good password and account-security practices."
+        )
+
     return "\n".join(
         f"• {recommendation}"
         for recommendation in recommendations
-    )
-
-    DEMO_RESULTS = {
-    "lowrisk@example.com": {
-        "breach_count": 0,
-        "exposed_data_count": 0,
-        "sensitive_data_exposed": False,
-    },
-    "mediumrisk@example.com": {
-        "breach_count": 2,
-        "exposed_data_count": 3,
-        "sensitive_data_exposed": False,
-    },
-    "highrisk@example.com": {
-        "breach_count": 4,
-        "exposed_data_count": 6,
-        "sensitive_data_exposed": True,
-    },
-}
-
-
-def lookup_identifier(identifier: str) -> dict:
-    """
-    Temporary local lookup used while developing the application.
-
-    Replace this function with an external breach API after the local
-    workflow has been tested.
-    """
-
-    normalised_identifier = identifier.strip().lower()
-
-    return DEMO_RESULTS.get(
-        normalised_identifier,
-        {
-            "breach_count": 0,
-            "exposed_data_count": 0,
-            "sensitive_data_exposed": False,
-        },
     )
 
 
@@ -165,11 +139,13 @@ def assess_identifier(identifier: str) -> AssessmentResult:
         "sensitive_data_exposed"
     ]
 
-    risk_score, risk_level = calculate_risk_score(
+    risk_score = calculate_risk_score(
         breach_count=breach_count,
         exposed_data_count=exposed_data_count,
         sensitive_data_exposed=sensitive_data_exposed,
     )
+
+    risk_level = determine_risk_level(risk_score)
 
     recommendations = create_recommendations(
         breach_count=breach_count,
