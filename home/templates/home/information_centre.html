@@ -1,0 +1,133 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Information Centre</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'home/css/style.css' %}"
+    >
+</head>
+
+<body>
+
+   <header>
+    <h1>Digital Footprint Risk Assessment</h1>
+
+    <nav>
+        <a href="{% url 'home:home' %}">Home</a>
+        <a href="{% url 'home:information-centre' %}">Information Centre</a>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
+
+            <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit">Log out</button>
+            </form>
+        {% else %}
+            <a href="{% url 'accounts:login' %}">Login</a>
+            <a href="{% url 'accounts:register' %}">Register</a>
+        {% endif %}
+    </nav>
+</header>
+
+    <main>
+        <section class="information-introduction">
+            <h2>Information Centre</h2>
+
+            <p>
+                Here are six practical strategies 
+                to help down your online accounts
+                and minimize your risk.
+                
+            </p>
+    
+        </section>
+
+        <section class="information-grid">
+
+            <article class="information-card">
+                <h3>What is the tool used for</h3>
+
+                <p>
+                    The tool is used to generate a numerical value or rating that measures 
+                    how vulnerable you are to cyber threats based
+                    on the trail of data you leave behind on the internet.     
+                 <br>
+                    <a href="{% url 'home:readmore1_page' %}">Read More</a>
+                </p>
+            </article>
+
+          <article class="information-card">
+    <h3>Understanding and Managing Your Digital Identity</h3>
+    <p>
+        Every action you take online forms an invisible, permanent archive of your life. Managing this digital identity is the foundation of personal cybersecurity.
+        <br>
+        <a href="{% url 'home:readmore2_page' %}">Read More</a>
+    </p> 
+</article>
+
+            <article class="information-card">
+                <h3>Monitoring and Detecting Corporate Data Breaches</h3>
+
+                <p>
+                    You don't have to be targeted individually to have your security compromised. Massive corporate data leaks happen daily, putting your information in the hands of bad actors.
+                    <br>
+                    <a href="{% url 'home:readmore3_page' %}">Read More</a>
+                </p>
+
+                
+            </article>
+
+            <article class="information-card">
+                <h3>Defending Against Social Engineering and Phishing</h3>
+
+                <p>
+                    Technology has become highly secure, which is why cybercriminals now attack the weakest link in the chain: human psychology..
+                    <br> <a href="{% url 'home:readmore4_page' %}">Read More</a>
+                </p>
+
+                
+            </article>
+
+            <article class="information-card">
+                <h3>Hardening Your Devices and Maximizing Privacy Settings</h3>
+
+                <p>
+                    Out-of-the-box settings on your phones, laptops, and applications are almost always optimized for corporate data gathering, not your personal privacy.
+                    <br> <a href="{% url 'home:readmore5_page' %}">Read More</a>
+                </p>
+
+                
+            </article>
+
+            <article class="information-card">
+                <h3>Moving Beyond Passwords to Advanced Authentication</h3>
+
+                <p>
+                    The traditional password is dead. In an era of advanced cloud computing and AI-driven cracking tools, relying solely on text-based strings is an invite for disaster.
+                    <br> <a href="{% url 'home:readmore6_page' %}">Read More</a>
+                </p>
+
+                
+            </article>
+
+        </section>
+    </main>
+
+    <footer>
+        <p>Digital Footprint Risk Assessment Project</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Risk Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'home/css/style.css' %}"
+    >
+</head>
+
+<body>
+    <header>
+        <h1>Digital Footprint Dashboard</h1>
+
+        <nav>
+            <a href="{% url 'home:home' %}">
+                Home
+            </a>
+
+            <a href="{% url 'assessments:create' %}">
+                New Assessment
+            </a>
+
+            <form
+                method="post"
+                action="{% url 'accounts:logout' %}"
+                class="logout-form"
+            >
+                {% csrf_token %}
+
+                <button type="submit">
+                    Log out
+                </button>
+            </form>
+        </nav>
+    </header>
+
+    <main>
+        <section class="dashboard-layout">
+
+            <section class="dashboard-card">
+                <h2>Welcome, {{ user.username }}</h2>
+
+                <p>
+                    Use this dashboard to review your digital footprint
+                    assessments and security recommendations.
+                </p>
+            </section>
+
+            <section class="dashboard-card">
+                <h2>Start a new assessment</h2>
+
+                <a
+                    class="button-link"
+                    href="{% url 'assessments:create' %}"
+                >
+                    Assess an identifier
+                </a>
+            </section>
+
+            <section class="dashboard-card">
+                <h2>Latest risk score</h2>
+
+                {% if latest_assessment %}
+                    <div class="latest-score">
+                        {{ latest_assessment.risk_score }}/10
+                    </div>
+
+                    <p>
+                        <strong>Risk level:</strong>
+                        {{ latest_assessment.get_risk_level_display }}
+                    </p>
+
+                    <p>
+                        <strong>Identifier:</strong>
+                        {{ latest_assessment.identifier }}
+                    </p>
+
+                    <p>
+                        <strong>Completed:</strong>
+                        {{ latest_assessment.created_at|date:"d M Y, H:i" }}
+                    </p>
+
+                    <a
+                        href="{% url 'assessments:result' latest_assessment.id %}"
+                        class="dashboard-button"
+                    >
+                        View latest result
+                    </a>
+                {% else %}
+                    <p>No assessments have been completed.</p>
+
+                    <a
+                        href="{% url 'assessments:create' %}"
+                        class="dashboard-button"
+                    >
+                        Start an assessment
+                    </a>
+                {% endif %}
+            </section>
+
+            <section class="dashboard-card">
+                <h2>Assessment history</h2>
+
+                {% if assessments %}
+                    <div class="assessment-history">
+                        {% for assessment in assessments %}
+                            <div class="history-item">
+                                <div class="history-details">
+                                    <strong>
+                                        {{ assessment.identifier }}
+                                    </strong>
+
+                                    <span>
+                                        {{ assessment.get_identifier_type_display }}
+                                    </span>
+
+                                    <span>
+                                        {{ assessment.created_at|date:"d M Y, H:i" }}
+                                    </span>
+                                </div>
+
+                                <div class="history-score">
+                                    {{ assessment.risk_score }}/10
+                                </div>
+
+                                <a
+                                    href="{% url 'assessments:result' assessment.id %}"
+                                    class="history-link"
+                                >
+                                    View result
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>
+                        Your previous assessments will appear here.
+                    </p>
+                {% endif %}
+            </section>
+
+        </section>
+    </main>
+</body>
+</html>

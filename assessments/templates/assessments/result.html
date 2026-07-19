@@ -1,0 +1,139 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Assessment Result</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/result.css' %}"
+    >
+</head>
+
+<body>
+
+    <header class="site-header">
+        <h1>Digital Footprint Risk Assessment</h1>
+
+        <nav class="site-navigation">
+            <a href="{% url 'accounts:dashboard' %}">
+                Dashboard
+            </a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+
+        <section class="result-heading">
+            <h2>Assessment Result</h2>
+
+            <p>
+                Review the calculated risk associated with your identifier.
+            </p>
+        </section>
+
+        <section class="result-grid">
+
+            <article class="result-card score-card">
+                <h3>Risk Score</h3>
+
+                <div class="risk-score">
+                    {{ assessment.risk_score }}/10
+                </div>
+
+                <p class="risk-level">
+                    Risk level:
+                    <strong>
+                        {{ assessment.get_risk_level_display }}
+                    </strong>
+                </p>
+            </article>
+
+            <article class="result-card">
+                <h3>Assessment Details</h3>
+
+                <p>
+                    <strong>Identifier type:</strong>
+                    {{ assessment.get_identifier_type_display }}
+                </p>
+
+                <p>
+                    <strong>Identifier:</strong>
+                    {{ assessment.identifier }}
+                </p>
+            </article>
+
+        </section>
+
+        <section class="result-card findings-card">
+            <h3>Findings</h3>
+
+            <div class="finding-row">
+                <span>Known breaches</span>
+
+                <strong>
+                    {{ assessment.breach_count }}
+                </strong>
+            </div>
+
+            <div class="finding-row">
+                <span>Exposed data categories</span>
+
+                <strong>
+                    {{ assessment.exposed_data_count }}
+                </strong>
+            </div>
+
+            <div class="finding-row">
+                <span>Sensitive data exposed</span>
+
+                <strong>
+                    {% if assessment.sensitive_data_exposed %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </strong>
+            </div>
+        </section>
+
+        <section class="result-card recommendations-card">
+            <h3>Recommendations</h3>
+
+            <div class="recommendations">
+                {{ assessment.recommendations|linebreaks }}
+            </div>
+        </section>
+
+        <div class="page-actions">
+            <a
+                href="{% url 'accounts:dashboard' %}"
+                class="secondary-button"
+            >
+                Return to Dashboard
+            </a>
+
+            <a
+                href="{% url 'assessments:create' %}"
+                class="primary-button"
+            >
+                New Assessment
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="site-footer">
+        <p>Digital Footprint Risk Assessment Tool</p>
+    </footer>
+
+</body>
+</html>

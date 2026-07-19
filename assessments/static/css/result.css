@@ -1,0 +1,200 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: #222222;
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.site-header {
+    width: 100%;
+    padding: 32px 20px 20px;
+    background-color: #19586b;
+    text-align: center;
+}
+
+.site-header h1 {
+    margin: 0 0 22px;
+    color: #ffffff;
+    font-size: 2rem;
+}
+
+.site-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+}
+
+.site-navigation a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.site-navigation a:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    width: min(1100px, 92%);
+    min-height: 65vh;
+    margin: 0 auto;
+    padding: 55px 0;
+}
+
+.result-heading {
+    margin-bottom: 30px;
+}
+
+.result-heading h2 {
+    margin: 0 0 10px;
+    font-size: 1.8rem;
+}
+
+.result-heading p {
+    margin: 0;
+    color: #d1d5db;
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(280px, 1fr)
+    );
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.result-card {
+    margin-bottom: 24px;
+    padding: 25px;
+    background-color: #2d2d2d;
+    border: 1px solid #454545;
+    border-radius: 6px;
+}
+
+.result-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.score-card {
+    border-left: 5px solid #18718b;
+}
+
+.risk-score {
+    margin-bottom: 10px;
+    font-size: 3.5rem;
+    font-weight: bold;
+}
+
+.risk-level {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+}
+
+.finding-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid #494949;
+}
+
+.finding-row:last-child {
+    border-bottom: none;
+}
+
+.recommendations {
+    line-height: 1.7;
+}
+
+.recommendations p {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.primary-button,
+.secondary-button {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.primary-button {
+    background-color: #18718b;
+    color: #ffffff;
+}
+
+.primary-button:hover {
+    background-color: #145d73;
+}
+
+.secondary-button {
+    background-color: #4b5563;
+    color: #ffffff;
+}
+
+.secondary-button:hover {
+    background-color: #374151;
+}
+
+.site-footer {
+    padding: 22px;
+    background-color: #19586b;
+    text-align: center;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+@media (max-width: 650px) {
+    .site-header h1 {
+        font-size: 1.6rem;
+    }
+
+    .main-content {
+        padding: 35px 0;
+    }
+
+    .risk-score {
+        font-size: 2.8rem;
+    }
+
+    .finding-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .page-actions {
+        flex-direction: column;
+    }
+
+    .primary-button,
+    .secondary-button {
+        width: 100%;
+        text-align: center;
+    }
+}

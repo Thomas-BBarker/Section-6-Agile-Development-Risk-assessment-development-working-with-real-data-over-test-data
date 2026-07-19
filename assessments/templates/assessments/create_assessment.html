@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>New Risk Assessment</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'home/css/style.css' %}">
+</head>
+
+<body>
+    <header>
+        <h1>Digital Footprint Risk Assessment</h1>
+
+        <nav>
+            <a href="{% url 'accounts:dashboard' %}">
+                Dashboard
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Assess an identifier</h2>
+
+            <p>
+                Only enter an email address or username that belongs
+                to you or that you have explicit permission to assess.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+                <div>
+                    {{ form.identifier_type.label_tag }}
+                    {{ form.identifier_type }}
+                    {{ form.identifier_type.errors }}
+                </div>
+
+                <div>
+                    {{ form.identifier.label_tag }}
+                    {{ form.identifier }}
+                    {{ form.identifier.errors }}
+                </div>
+
+                <button type="submit">
+                    Run assessment
+                </button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
