@@ -30,12 +30,7 @@ class AssessmentResult:
     recommendations: str
 
 
-def lookup_identifier(identifier: str) -> dict:
-    """
-    Temporary local lookup used while developing the application.
-
-    This can later be replaced with an external breach-data API.
-    """
+def lookup_demo_identifier(identifier: str) -> dict:
 
     normalised_identifier = identifier.strip().lower()
 
@@ -131,7 +126,7 @@ def create_recommendations(
 
 
 def assess_identifier(identifier: str) -> AssessmentResult:
-    lookup_result = lookup_identifier(identifier)
+    lookup_result = lookup_demo_identifier(identifier)
 
     breach_count = lookup_result["breach_count"]
     exposed_data_count = lookup_result["exposed_data_count"]
