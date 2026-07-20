@@ -13,38 +13,27 @@ class RiskAssessmentForm(forms.ModelForm):
 
         widgets = {
             "identifier_type": forms.Select(),
-            "identifier": forms.TextInput(
+            "identifier": forms.EmailInput(
                 attrs={
-                    "placeholder": "Enter your email address or username",
-                    "autocomplete": "off",
+                    "placeholder": "Enter your email address",
+                    "autocomplete": "email",
                 }
             ),
         }
 
-    def clean_identifier(self):
-        identifier = self.cleaned_data["identifier"].strip()
+        labels = {
+            "identifier_type": "Identifier type",
+            "identifier": "Email address",
+        }
 
-        if len(identifier) < 3:
+    def clean_identifier(self):
+        identifier = self.cleaned_data["identifier"].strip().lower()
+
+        try:
+            forms.EmailField().clean(identifier)
+        except forms.ValidationError:
             raise forms.ValidationError(
-                "The identifier must contain at least three characters."
+                "Enter a valid email address."
             )
 
         return identifier
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        identifier_type = cleaned_data.get("identifier_type")
-        identifier = cleaned_data.get("identifier")
-
-        if (
-            identifier_type == "email"
-            and identifier
-            and "@" not in identifier
-        ):
-            self.add_error(
-                "identifier",
-                "Enter a valid email address.",
-            )
-
-        return cleaned_data

@@ -2,14 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
     <title>New Risk Assessment</title>
+
     {% load static %}
-    <link rel="stylesheet" href="{% static 'home/css/style.css' %}">
+    <link
+        rel="stylesheet"
+        href="{% static 'home/css/style.css' %}"
+    >
 </head>
 
 <body>
@@ -25,28 +30,49 @@
 
     <main>
         <section>
-            <h2>Assess an identifier</h2>
+            <h2>Assess an email address</h2>
 
             <p>
-                Only enter an email address or username that belongs
-                to you or that you have explicit permission to assess.
+                Enter an email address that belongs to you or that
+                you have explicit permission to assess.
+            </p>
+
+            <p>
+                The email address will be checked against known
+                publicly reported data breaches.
             </p>
 
             <form method="post">
                 {% csrf_token %}
 
-                {{ form.non_field_errors }}
+                {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-                <div>
+                <div class="form-group">
                     {{ form.identifier_type.label_tag }}
                     {{ form.identifier_type }}
-                    {{ form.identifier_type.errors }}
+
+                    {% for error in form.identifier_type.errors %}
+                        <p class="field-error">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
                 </div>
 
-                <div>
+                <div class="form-group">
                     {{ form.identifier.label_tag }}
                     {{ form.identifier }}
-                    {{ form.identifier.errors }}
+
+                    {% for error in form.identifier.errors %}
+                        <p class="field-error">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
                 </div>
 
                 <button type="submit">

@@ -141,3 +141,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "accounts:dashboard"
 LOGOUT_REDIRECT_URL = "home:home"
+
+BREACH_DEMO_MODE = False
+
+BREACH_API_ENDPOINT = "https://api.xposedornot.com/v1/check-email"
+
+BREACH_API_TIMEOUT = 10
+
+BREACH_API_BASE_URL = (
+    "https://api.xposedornot.com/v1/check-email"
+)
+
+BREACH_API_TIMEOUT = 10

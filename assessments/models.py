@@ -6,7 +6,6 @@ from django.db import models
 class RiskAssessment(models.Model):
     IDENTIFIER_TYPES = [
         ("email", "Email address"),
-        ("username", "Username"),
     ]
 
     RISK_LEVEL_CHOICES = [

@@ -1,23 +1,13 @@
 from dataclasses import dataclass
+from typing import Any
+from urllib.parse import quote
+
+import requests
+from django.conf import settings
 
 
-DEMO_RESULTS = {
-    "lowrisk@example.com": {
-        "breach_count": 0,
-        "exposed_data_count": 0,
-        "sensitive_data_exposed": False,
-    },
-    "mediumrisk@example.com": {
-        "breach_count": 2,
-        "exposed_data_count": 3,
-        "sensitive_data_exposed": False,
-    },
-    "highrisk@example.com": {
-        "breach_count": 4,
-        "exposed_data_count": 6,
-        "sensitive_data_exposed": True,
-    },
-}
+class BreachLookupError(Exception):
+    """Raised when the breach API cannot complete a lookup."""
 
 
 @dataclass
@@ -30,18 +20,197 @@ class AssessmentResult:
     recommendations: str
 
 
-def lookup_demo_identifier(identifier: str) -> dict:
+SENSITIVE_DATA_TYPES = {
+    "password",
+    "passwords",
+    "credit card",
+    "credit cards",
+    "bank account",
+    "bank accounts",
+    "social security number",
+    "national insurance number",
+    "passport",
+    "date of birth",
+    "dates of birth",
+    "phone number",
+    "phone numbers",
+    "physical address",
+    "physical addresses",
+}
 
-    normalised_identifier = identifier.strip().lower()
 
-    return DEMO_RESULTS.get(
-        normalised_identifier,
-        {
+def lookup_email_breaches(identifier: str) -> dict[str, Any]:
+    """
+    Check an email address against the XposedOrNot API.
+
+    Returns a normalised dictionary containing breach information.
+    """
+
+    email = identifier.strip().lower()
+    encoded_email = quote(email, safe="")
+
+    url = (
+        f"{settings.BREACH_API_BASE_URL}/"
+        f"{encoded_email}"
+    )
+
+    try:
+        response = requests.get(
+            url,
+            timeout=settings.BREACH_API_TIMEOUT,
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "DigitalFootprintRiskAssessment/1.0",
+            },
+        )
+    except requests.Timeout as exc:
+        raise BreachLookupError(
+            "The breach service took too long to respond. "
+            "Please try again."
+        ) from exc
+    except requests.RequestException as exc:
+        raise BreachLookupError(
+            "The breach service could not be reached. "
+            "Please try again later."
+        ) from exc
+
+    # XposedOrNot may use 404 when no matching breaches exist.
+    if response.status_code == 404:
+        return {
+            "breach_names": [],
             "breach_count": 0,
             "exposed_data_count": 0,
             "sensitive_data_exposed": False,
-        },
+        }
+
+    if response.status_code == 429:
+        raise BreachLookupError(
+            "Too many breach checks have been made. "
+            "Please wait and try again."
+        )
+
+    if response.status_code >= 500:
+        raise BreachLookupError(
+            "The breach service is temporarily unavailable."
+        )
+
+    if response.status_code != 200:
+        raise BreachLookupError(
+            "The breach lookup could not be completed."
+        )
+
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise BreachLookupError(
+            "The breach service returned an invalid response."
+        ) from exc
+
+    breach_names = extract_breach_names(payload)
+    exposed_data = extract_exposed_data(payload)
+
+    exposed_data_normalised = {
+        str(item).strip().lower()
+        for item in exposed_data
+        if str(item).strip()
+    }
+
+    sensitive_data_exposed = bool(
+        exposed_data_normalised.intersection(
+            SENSITIVE_DATA_TYPES
+        )
     )
+
+    return {
+        "breach_names": breach_names,
+        "breach_count": len(breach_names),
+        "exposed_data_count": len(exposed_data_normalised),
+        "sensitive_data_exposed": sensitive_data_exposed,
+    }
+
+
+def extract_breach_names(payload: Any) -> list[str]:
+    """
+    Extract breach names from possible XposedOrNot response shapes.
+    """
+
+    if not isinstance(payload, dict):
+        return []
+
+    breaches = payload.get("breaches", [])
+
+    if isinstance(breaches, list):
+        # Common response shape:
+        # {"breaches": [["Adobe", "Dropbox"]]}
+        if (
+            len(breaches) == 1
+            and isinstance(breaches[0], list)
+        ):
+            breaches = breaches[0]
+
+        names = []
+
+        for breach in breaches:
+            if isinstance(breach, str):
+                names.append(breach)
+
+            elif isinstance(breach, dict):
+                name = (
+                    breach.get("name")
+                    or breach.get("breach")
+                    or breach.get("title")
+                )
+
+                if name:
+                    names.append(str(name))
+
+        return list(dict.fromkeys(names))
+
+    return []
+
+
+def extract_exposed_data(payload: Any) -> list[str]:
+    """
+    Extract exposed-data categories when they are available.
+
+    The basic check-email endpoint may return only breach names, so an
+    empty result is valid.
+    """
+
+    if not isinstance(payload, dict):
+        return []
+
+    possible_keys = [
+        "xposed_data",
+        "exposed_data",
+        "data_classes",
+        "dataclasses",
+    ]
+
+    exposed_items = []
+
+    for key in possible_keys:
+        value = payload.get(key)
+
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, list):
+                    exposed_items.extend(item)
+                else:
+                    exposed_items.append(item)
+
+        elif isinstance(value, str):
+            exposed_items.extend(
+                item.strip()
+                for item in value.split(",")
+                if item.strip()
+            )
+
+    return [
+        str(item)
+        for item in exposed_items
+        if str(item).strip()
+    ]
 
 
 def calculate_risk_score(
@@ -126,10 +295,12 @@ def create_recommendations(
 
 
 def assess_identifier(identifier: str) -> AssessmentResult:
-    lookup_result = lookup_demo_identifier(identifier)
+    lookup_result = lookup_email_breaches(identifier)
 
     breach_count = lookup_result["breach_count"]
-    exposed_data_count = lookup_result["exposed_data_count"]
+    exposed_data_count = lookup_result[
+        "exposed_data_count"
+    ]
     sensitive_data_exposed = lookup_result[
         "sensitive_data_exposed"
     ]
