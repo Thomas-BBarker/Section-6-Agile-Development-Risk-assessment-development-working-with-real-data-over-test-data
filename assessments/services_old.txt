@@ -7,7 +7,7 @@ from django.conf import settings
 
 
 class BreachLookupError(Exception):
-    """Raised when the breach API cannot complete a lookup."""
+   
 
 
 @dataclass
@@ -40,11 +40,7 @@ SENSITIVE_DATA_TYPES = {
 
 
 def lookup_email_breaches(identifier: str) -> dict[str, Any]:
-    """
-    Check an email address against the XposedOrNot API.
-
-    Returns a normalised dictionary containing breach information.
-    """
+    
 
     email = identifier.strip().lower()
     encoded_email = quote(email, safe="")
@@ -74,7 +70,7 @@ def lookup_email_breaches(identifier: str) -> dict[str, Any]:
             "Please try again later."
         ) from exc
 
-    # XposedOrNot may use 404 when no matching breaches exist.
+    
     if response.status_code == 404:
         return {
             "breach_names": [],
@@ -130,9 +126,7 @@ def lookup_email_breaches(identifier: str) -> dict[str, Any]:
 
 
 def extract_breach_names(payload: Any) -> list[str]:
-    """
-    Extract breach names from possible XposedOrNot response shapes.
-    """
+    
 
     if not isinstance(payload, dict):
         return []
@@ -140,8 +134,7 @@ def extract_breach_names(payload: Any) -> list[str]:
     breaches = payload.get("breaches", [])
 
     if isinstance(breaches, list):
-        # Common response shape:
-        # {"breaches": [["Adobe", "Dropbox"]]}
+        
         if (
             len(breaches) == 1
             and isinstance(breaches[0], list)
@@ -170,12 +163,7 @@ def extract_breach_names(payload: Any) -> list[str]:
 
 
 def extract_exposed_data(payload: Any) -> list[str]:
-    """
-    Extract exposed-data categories when they are available.
-
-    The basic check-email endpoint may return only breach names, so an
-    empty result is valid.
-    """
+    
 
     if not isinstance(payload, dict):
         return []
