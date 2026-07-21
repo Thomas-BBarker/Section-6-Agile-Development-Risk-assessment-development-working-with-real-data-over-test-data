@@ -13,11 +13,9 @@ def information_centre(request):
 def password_security(request):
     return render(request, "home/passwordsecurity.html")
 
-def information_centre(request):
-    return render(request, 'home/information_centre.html')
-
 def readmore1(request):
     return render(request, 'home/readmore1.html')
+
 def readmore2(request):
     return render(request, 'home/readmore2.html')
    
