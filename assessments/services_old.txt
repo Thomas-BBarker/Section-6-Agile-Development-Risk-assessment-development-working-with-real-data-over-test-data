@@ -328,10 +328,7 @@ def assess_identifier(identifier: str) -> AssessmentResult:
     )
 
     def perform_risk_assessment(assessment) -> None:
-    """
-    Run the breach lookup and save the calculated results
-    to an existing RiskAssessment object.
-    """
+   
 
     result = assess_identifier(assessment.identifier)
 
