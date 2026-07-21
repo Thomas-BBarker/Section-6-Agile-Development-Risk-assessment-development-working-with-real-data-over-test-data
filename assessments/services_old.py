@@ -326,3 +326,29 @@ def assess_identifier(identifier: str) -> AssessmentResult:
         risk_level=risk_level,
         recommendations=recommendations,
     )
+
+    def perform_risk_assessment(assessment) -> None:
+    """
+    Run the breach lookup and save the calculated results
+    to an existing RiskAssessment object.
+    """
+
+    result = assess_identifier(assessment.identifier)
+
+    assessment.breach_count = result.breach_count
+    assessment.exposed_data_count = result.exposed_data_count
+    assessment.sensitive_data_exposed = result.sensitive_data_exposed
+    assessment.risk_score = result.risk_score
+    assessment.risk_level = result.risk_level
+    assessment.recommendations = result.recommendations
+
+    assessment.save(
+        update_fields=[
+            "breach_count",
+            "exposed_data_count",
+            "sensitive_data_exposed",
+            "risk_score",
+            "risk_level",
+            "recommendations",
+        ]
+    )

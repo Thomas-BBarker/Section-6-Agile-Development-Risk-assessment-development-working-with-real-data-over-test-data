@@ -1,64 +1,75 @@
 from django.db import transaction
 
-from home.models import BreachFinding
+from assessments.models import BreachFinding
 
-from .breach_service import BreachServiceError, lookup_email_breaches
+from .breach_service import lookup_email_breaches
 from .recommendations import generate_recommendations
 from .scoring import (
     calculate_risk_score,
     determine_risk_level,
-    generate_assessment_summary,
 )
 
 
 @transaction.atomic
 def perform_risk_assessment(assessment):
-    assessment.status = "processing"
-    assessment.error_message = ""
-    assessment.save(update_fields=["status", "error_message"])
 
-    try:
-        breaches = lookup_email_breaches(assessment.email)
+    breaches = lookup_email_breaches(assessment.identifier)
 
-        assessment.breach_findings.all().delete()
+    assessment.breach_findings.all().delete()
 
-        for breach in breaches:
-            BreachFinding.objects.create(
-                assessment=assessment,
-                provider_breach_id=breach.provider_breach_id,
-                name=breach.name,
-                title=breach.title,
-                domain=breach.domain,
-                breach_date=breach.breach_date,
-                exposed_data=list(breach.exposed_data),
-                is_verified=breach.is_verified,
-                is_sensitive=breach.is_sensitive,
-                is_retired=breach.is_retired,
-            )
+    exposed_data_types = set()
+    sensitive_data_exposed = False
 
-        breach_count = len(breaches)
-        score = calculate_risk_score(breach_count)
-        level = determine_risk_level(score)
+    for breach in breaches:
+        exposed_data = list(breach.exposed_data)
 
-        assessment.unique_breach_count = breach_count
-        assessment.risk_score = score
-        assessment.risk_level = level
-        assessment.summary = generate_assessment_summary(
-            breach_count=breach_count,
-            score=score,
-            risk_level=level,
+        BreachFinding.objects.create(
+            assessment=assessment,
+            provider_breach_id=breach.provider_breach_id,
+            name=breach.name,
+            title=breach.title,
+            domain=breach.domain,
+            breach_date=breach.breach_date,
+            exposed_data=exposed_data,
+            is_verified=breach.is_verified,
+            is_sensitive=breach.is_sensitive,
+            is_retired=breach.is_retired,
         )
-        assessment.recommendations = generate_recommendations(
-            risk_level=level,
-            breach_count=breach_count,
+
+        exposed_data_types.update(
+            str(item).strip().lower()
+            for item in exposed_data
+            if str(item).strip()
         )
-        assessment.status = "completed"
-        assessment.error_message = ""
 
-    except BreachServiceError as exc:
-        assessment.status = "failed"
-        assessment.error_message = str(exc)
+        if breach.is_sensitive:
+            sensitive_data_exposed = True
 
-    assessment.save()
+    breach_count = len(breaches)
+    exposed_data_count = len(exposed_data_types)
+
+    score = calculate_risk_score(breach_count)
+    level = determine_risk_level(score)
+
+    assessment.breach_count = breach_count
+    assessment.exposed_data_count = exposed_data_count
+    assessment.sensitive_data_exposed = sensitive_data_exposed
+    assessment.risk_score = score
+    assessment.risk_level = level
+    assessment.recommendations = generate_recommendations(
+        risk_level=level,
+        breach_count=breach_count,
+    )
+
+    assessment.save(
+        update_fields=[
+            "breach_count",
+            "exposed_data_count",
+            "sensitive_data_exposed",
+            "risk_score",
+            "risk_level",
+            "recommendations",
+        ]
+    )
 
     return assessment

@@ -73,3 +73,58 @@ class RiskAssessment(models.Model):
             f"{self.identifier_type} assessment "
             f"({self.risk_score}/10)"
         )
+
+
+class BreachFinding(models.Model):
+    assessment = models.ForeignKey(
+        RiskAssessment,
+        on_delete=models.CASCADE,
+        related_name="breach_findings",
+    )
+
+    provider_breach_id = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
+    name = models.CharField(
+        max_length=255,
+    )
+
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
+    domain = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
+    breach_date = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    exposed_data = models.JSONField(
+        default=list,
+        blank=True,
+    )
+
+    is_verified = models.BooleanField(
+        default=False,
+    )
+
+    is_sensitive = models.BooleanField(
+        default=False,
+    )
+
+    is_retired = models.BooleanField(
+        default=False,
+    )
+
+    def __str__(self):
+        return self.title or self.name
